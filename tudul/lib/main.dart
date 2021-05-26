@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tudul',
       theme: ThemeData(
-        primaryColor: blue,
+        primaryColor: darkblue,
         fontFamily: GoogleFonts.ubuntu().fontFamily,
       ),
       home: MyHomePage(title: 'TUDUL'),
@@ -50,28 +50,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
+    return GestureDetector(
+      onTap: FocusManager.instance.primaryFocus?.unfocus,
+      child: Scaffold(
+        backgroundColor: lightblue,
+        appBar: AppBar(
+          leading: Image(
+            image: AssetImage('assets/images/logo.png'),
           ),
+          title: Text(
+            widget.title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+            ),
+          ),
+          centerTitle: true,
+          elevation: 0,
         ),
-        centerTitle: true,
-        elevation: 0,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              _form(),
+              _check(),
+            ],
+          ),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _form(),
-            _check(),
-          ],
-        ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -86,12 +92,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 controller: _ctrlName,
                 decoration: InputDecoration(
                   labelText: 'Enter Task',
-                  // enabledBorder: UnderlineInputBorder(
-                  //   borderSide: BorderSide(color: Colors.red),
-                  // ),
-                  // focusedBorder: UnderlineInputBorder(
-                  //   borderSide: BorderSide(color: blue, width: 12.0),
-                  // ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: mediumblue),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: darkblue, width: 2.0),
+                  ),
                 ),
                 onSaved: (val) => setState(() => _task.name = val),
                 validator: (val) =>
@@ -101,11 +107,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 controller: _ctrlDesc,
                 decoration: InputDecoration(
                   labelText: 'Description (Optional)',
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: mediumblue),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: darkblue, width: 2.0),
+                  ),
                 ),
                 onSaved: (val) => setState(() => _task.desc = val),
-                // validator: (val) => (val!.length < 10
-                //     ? 'Atleast 10 characters required'
-                //     : null),
               ),
               InkWell(
                 onTap: _onSubmit,
@@ -126,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     decoration: BoxDecoration(
-                      color: blue,
+                      color: darkblue,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -138,10 +147,11 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   _refreshTaskList() async {
-    List<Task> x = await _dbHelper.fetchContacts();
+    List<Task> x = await _dbHelper.fetchTasks();
     setState(() {
       _tasks = x;
     });
+    _resetForm();
   }
 
   _onSubmit() async {
@@ -149,11 +159,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (form!.validate()) {
       form.save();
       if (_task.id == null)
-        await _dbHelper.insertContact(_task);
+        await _dbHelper.insertTask(_task);
       else
-        await _dbHelper.updateContact(_task);
-      _resetForm();
+        await _dbHelper.updateTask(_task);
+
       _refreshTaskList();
+      FocusScopeNode currentFocus = FocusScope.of(context);
+
+      if (!currentFocus.hasPrimaryFocus) {
+        currentFocus.unfocus();
+      }
     }
   }
 
@@ -162,6 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _formKey.currentState!.reset();
       _ctrlName.clear();
       _ctrlDesc.clear();
+      _task.id = null;
     });
   }
 
@@ -175,14 +191,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _empty() => Padding(
         padding: const EdgeInsets.only(top: 20.0),
-        child: Container(
-          child: Card(
-            child: Image(
-              image: AssetImage('assets/images/todo.png'),
-              height: 145,
-            ),
-            elevation: 0,
-          ),
+        child: Column(
+          children: [
+            Container(
+                // child: Card(
+                //   child: Image(
+                //     image: AssetImage('assets/images/todo.png'),
+                //     height: 145,
+                //   ),
+                //   elevation: 0,
+                // ),
+                ),
+            // Text("No tasks!!"),
+          ],
         ),
       );
 
@@ -197,13 +218,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   ListTile(
                     leading: Icon(
                       Icons.task,
-                      color: blue,
+                      color: darkblue,
                       size: 40.0,
                     ),
                     title: Text(
                       _tasks[index].name!.toUpperCase(),
                       style: TextStyle(
-                        color: blue,
+                        color: darkblue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -211,10 +232,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     trailing: IconButton(
                       icon: Icon(
                         Icons.delete_sweep,
-                        color: blue,
+                        color: darkblue,
                       ),
                       onPressed: () async {
-                        await _dbHelper.deleteContact(_tasks[index].id!);
+                        await _dbHelper.deleteTask(_tasks[index].id!);
                         _resetForm();
                         _refreshTaskList();
                       },
@@ -228,7 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   Divider(
-                    height: 5.0,
+                    height: 10.0,
                   ),
                 ],
               );

@@ -38,28 +38,28 @@ class DatabaseHelper {
       ''');
   }
 
-  //contact - insert
-  Future<int> insertContact(Task task) async {
+  //Task - insert
+  Future<int> insertTask(Task task) async {
     Database? db = await database;
     return await db!.insert(Task.tblTask, task.toMap());
   }
 
-//contact - update
-  Future<int> updateContact(Task task) async {
+//Task - update
+  Future<int> updateTask(Task task) async {
     Database? db = await database;
     return await db!.update(Task.tblTask, task.toMap(),
         where: '${Task.colId}=?', whereArgs: [task.id]);
   }
 
-//contact - delete
-  Future<int> deleteContact(int id) async {
+//Task - delete
+  Future<int> deleteTask(int id) async {
     Database? db = await database;
     return await db!
         .delete(Task.tblTask, where: '${Task.colId}=?', whereArgs: [id]);
   }
 
-//contact - retrieve all
-  Future<List<Task>> fetchContacts() async {
+//Task - retrieve all
+  Future<List<Task>> fetchTasks() async {
     Database? db = await database;
     List<Map> task = await db!.query(Task.tblTask);
     return task.length == 0 ? [] : task.map((x) => Task.fromMap(x)).toList();
